@@ -1,17 +1,21 @@
 import UIKit
 
-class MusicRepository {
+protocol hasID {
+    var id: String? { get set }
+}
+
+class Repository<Type> where Type: Codable, Type: hasID {
     var path: String
     init(withPath path:String){
         self.path = path
     }
     // READ a single object
-    func fetch(withId id: Int, withCompletion completion: @escaping (Music?) -> Void) {
+    func fetch(withId id: Int, withCompletion completion: @escaping (Type?) -> Void) {
         let URLstring = path + "/id/\(id)"
         if let url = URL.init(string: URLstring){
             let task = URLSession.shared.dataTask(with: url, completionHandler:
             {(data, response, error) in
-                if let music = try? JSONDecoder().decode(Music.self, from: data!){
+                if let music = try? JSONDecoder().decode(Type.self, from: data!){
                     completion (music)
                 }
             })
@@ -20,7 +24,7 @@ class MusicRepository {
     }
     
     //TODO: Build and test comparable methods for the other CRUD items
-    func create(a: Music) {
+    func create(a: Type) {
         guard a.id != nil else { return }
         let URLstring = path + "/id/\(a.id!)"
         
@@ -41,7 +45,7 @@ class MusicRepository {
         task.resume()
     }
 
-    func update(withId: Int, a: Music) {
+    func update(withId: Int, a: Type) {
         guard a.id != nil else { return }
         let URLString = path + "/id/\(a.id!)"
         
@@ -82,7 +86,7 @@ class MusicRepository {
     
 }
 
-class Music: Codable {
+class Music: Codable, hasID {
     var id: String?
     var name: String?
     var music_url: String?
@@ -90,7 +94,7 @@ class Music: Codable {
 }
 
 //Create a User Repository for the API at https://www.orangevalleycaa.org/api/music
-let userRepo = MusicRepository(withPath: "https://www.orangevalleycaa.org/api/music")
+let userRepo = Repository<Music>(withPath: "https://www.orangevalleycaa.org/api/music")
 
 //Fetch a single User
 userRepo.fetch(withId: 1, withCompletion: {(music) in
