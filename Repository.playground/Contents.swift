@@ -25,9 +25,39 @@ class UserRepository {
     }
     
     //TODO: Build and test comparable methods for the other CRUD items
-    //func create( a:User , withCompletion completion: @escaping (User?) -> Void) {}
-    //func update( withId id:Int, a:User) {}
-    //func delete( withId id:Int ) {}
+    func create( a:User , withCompletion completion: @escaping (User?) -> Void) {
+        guard a.UserID != nil else {return}
+        let URLstring = path + "id/\(a.UserID!)"
+        var post = URLRequest.init(url: URL.init(string: URLstring)!)
+        
+        post.httpMethod = "POST"
+        post.httpBody = try? JSONEncoder().encode(a)
+        let task = URLSession.shared.dataTask(with: post) {(data, response, error) in
+                    print (String.init(data: data!, encoding: .ascii) ?? "no data added")
+    }
+        task.resume()
+    }
+    func update( withId id:Int, a:User) {
+        guard a.UserID != nil else {return}
+        let URLstring = path + "id/\(a.UserID!)"
+        var put = URLRequest.init(url: URL.init(string: URLstring)!)
+        
+        put.httpMethod = "PUT"
+        put.httpBody = try? JSONEncoder().encode(a)
+        let task = URLSession.shared.dataTask(with: put) {(data, response, error) in
+                    print (String.init(data: data!, encoding: .ascii) ?? "no data updated")
+    }
+        task.resume()
+    }
+    func delete( withId id:Int ) {
+        let URLstring = path + "id/\(id)"
+        var delete = URLRequest.init(url:URL.init(string: URLstring)!)
+        delete.httpMethod = "DELETE"
+        let task = URLSession.shared.dataTask(with: delete) {(data,response,error) in
+            print (String.init(data: data!, encoding: .ascii) ?? "no data deleted")
+        }
+        task.resume()
+    }
     
 }
 
