@@ -50,7 +50,7 @@ userRepo.fetch(withId: 1, withCompletion: {(user) in
 
 print("Done initiating fetch")
 
-/**
+/*
  * TODO: // Refactor the code using Generics and protocols so that you can re-use it as shown below
  *
  //Create a User Repository for the API at https://mikethetall.pythonanywhere.com/users/users/
