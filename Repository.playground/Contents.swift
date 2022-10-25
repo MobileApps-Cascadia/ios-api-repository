@@ -7,7 +7,7 @@ class Repository<Element: Codable> {
         self.path = path
     }
     // READ a single object
-    func fetch(withId id: Int, withCompletion completion: @escaping (User?) -> Void) {
+    func fetch(withId id: Int, withCompletion completion: @escaping (Element?) -> Void) {
         let URLstring = path + "\(id)"
         if let url = URL.init(string: URLstring){
             let task = URLSession.shared.dataTask(with: url, completionHandler:
@@ -18,7 +18,7 @@ class Repository<Element: Codable> {
                 
                 if let user = try? JSONDecoder().decode(Element.self, from: data!){
                     print("Running completion closure")
-                    completion ((user as! User))
+                    completion (user)
                 }
             })
             task.resume()
@@ -28,7 +28,7 @@ class Repository<Element: Codable> {
     //TODO: Build and test comparable methods for the other CRUD items
     func create( a:User , withCompletion completion: @escaping (User?) -> Void) {
         guard a.UserID != nil else {return}
-        let URLstring = path + "user"
+        let URLstring = path + "/id/\(a.UserID!)"
         var postRequest = URLRequest.init(url: URL.init(string: URLstring)!)
         postRequest.httpMethod = "POST"
 
@@ -42,7 +42,7 @@ class Repository<Element: Codable> {
     
     func update( withId id:Int, a:User) {
              guard a.UserID != nil else {return}
-             let URLstring = path + "User/userId/\(id)"
+             let URLstring = path + "/id/\(a.UserID!)"
              var putRequest = URLRequest.init(url: URL.init(string: URLstring)!)
 
              putRequest.httpMethod = "PUT"
@@ -56,7 +56,7 @@ class Repository<Element: Codable> {
          }
 
     func delete( withId id:Int ) {
-        let URLstring = path + "User/userID/\(id)"
+                let URLstring = path + "User/userID/\(id)"
                   var deleteRequest = URLRequest.init(url: URL.init(string: URLstring)!)
 
                   deleteRequest.httpMethod = "DELETE"
