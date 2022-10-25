@@ -107,12 +107,34 @@ print("Done initiating fetch")
  var seekTime: String?
  var status: String?
  }
+ //bonus
+ 
+ protocol APIRepository {
+      associatedtype Value
+      var value = Value? {
+          get
+          set
+
+      }
+  }
  //Create a Match Repository for a different API at http://216.186.69.45/services/hidenseek/matches/
+ 
  let matchRepo = Repository<Match>(withPath: "http://216.186.69.45/services/hidenseek/matches/")
  
- //Fetch a single User
- matchRepo.fetch(withId: 1185, withCompletion: {(match) in
-    print(match!.status ?? "no match")
- })
 */
+protocol APIRepository {
+     associatedtype Value
+     var value = Value? {
+         get
+         set
+
+     }
+ }
+
+let matchRepo = Repository<Match>(withPath: "http://216.186.69.45/services/hidenseek/matches/")
+
+//Fetch a single User
+ matchRepo.fetch(withId: 1185, withCompletion: {(match) in
+   print(match!.status ?? "no match")
+})
 
