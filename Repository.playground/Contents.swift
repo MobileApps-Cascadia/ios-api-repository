@@ -77,6 +77,12 @@ class User: Codable {
     var SID: String?
 }
 
+let newUser = User()
+ newUser.FirstName = "Fergal"
+ newUser.LastName = "McSwiggin"
+ newUser.PhoneNumber = "666-666-6666"
+ newUser.SID = "90210"
+
 //Create a User Repository for the API at https://mikethetall.pythonanywhere.com/users
 let userRepo = Repository<User>(withPath: "https://mikethetall.pythonanywhere.com/users")
 
@@ -88,17 +94,16 @@ userRepo.fetch(withId: 1, withCompletion: {(user) in
 
 print("Done initiating fetch")
 
-/*
- * TODO: // Refactor the code using Generics and protocols so that you can re-use it as shown below
- *
- //Create a User Repository for the API at https://mikethetall.pythonanywhere.com/users/users/
- let userRepo = Repository<User>(withPath: "https://mikethetall.pythonanywhere.com/users/users/")
+//* TODO: // Refactor the code using Generics and protocols so that you can re-use it as shown below
+ //*
+
  
  //Fetch a single User
  userRepo.fetch(withId: 2, withCompletion: {(user) in
     print(user!.FirstName ?? "no user")
  })
  
+                                /*
  // Another type of object
  class Match: Codable {
  var name: String?
@@ -124,9 +129,8 @@ print("Done initiating fetch")
 */
 protocol APIRepository {
      associatedtype Value
-     var value = Value? {
-         get
-         set
+     var value1 = Value? {
+        
 
      }
  }
