@@ -1,13 +1,13 @@
 import UIKit
 
-class UserRepository {
+class UserRepository<Element: Codable> {
     var path: String
     init(withPath path:String){
         self.path = path
     }
     // READ a single object
-    func fetch(withId id: Int, withCompletion completion: @escaping (User?) -> Void) {
-        let URLstring = path + "\(id)"
+    func fetch(withId id: Int, withCompletion completion: @escaping (Element) -> Void) {
+        let URLstring = path + "/\(id)"
         if let url = URL.init(string: URLstring){
             let task = URLSession.shared.dataTask(with: url, completionHandler:
             {(data, response, error) in
@@ -15,7 +15,7 @@ class UserRepository {
                 let str = String(decoding: data!, as: UTF8.self)
                 print("Responding to request data: " + str)
                 
-                if let user = try? JSONDecoder().decode(User.self, from: data!){
+                if let user = try? JSONDecoder().decode(Element.self, from: data!){
                     print("Running completion closure")
                     completion (user)
                 }
@@ -25,10 +25,43 @@ class UserRepository {
     }
     
     //TODO: Build and test comparable methods for the other CRUD items
-    //func create( a:User , withCompletion completion: @escaping (User?) -> Void) {}
-    //func update( withId id:Int, a:User) {}
-    //func delete( withId id:Int ) {}
+    func create( a:User , withCompletion completion: @escaping (String) -> Void) {
+        let URLstring = path + "/id/\(a.UserID)"
+        var postRequest = URLRequest.init(url: URL.init(string:URLstring)!)
+        
+        postRequest.httpMethod = "POST"
+        postRequest.httpBody = try? JSONEncoder().encode(a)
+        let task = URLSession.shared.dataTask(with: postRequest){
+            (data, response, error) in
+            print(String.init(data: data!, encoding: .ascii) ?? "no data")
+        }
+        task.resume()
+    }
     
+    func update( withId id:Int, a:User) {
+        let urlString = path + "/id/\(String(id))"
+        var updateRequest = URLRequest.init(url: URL.init(string: urlString)!)
+        updateRequest.httpMethod = "PUT"
+        updateRequest.httpBody = try? JSONEncoder().encode(a)
+        updateRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        let task = URLSession.shared.dataTask(with: updateRequest){
+            (data, response, error) in
+            print(String.init(data: data!, encoding: .ascii) ?? "no data")
+        }
+        task?.resume()
+    }
+    
+    func delete( withId id:Int ) {
+        let urlString = path + "/id/\(id)"
+        var deleteRequest = URLRequest.init(url: URL.init(string: urlString)!)
+        deleteRequest.httpMethod = "DELETE"
+        deleteRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        let task = URLSession.shared.dataTask(with: deleteRequest){
+            (data, response, error) in
+            print(String.init(data: data!, encoding: .ascii) ?? "no data")
+        }
+        task.resume()
+    }
 }
 
 class User: Codable {
@@ -40,7 +73,7 @@ class User: Codable {
 }
 
 //Create a User Repository for the API at https://mikethetall.pythonanywhere.com/users
-let userRepo = UserRepository(withPath: "https://mikethetall.pythonanywhere.com/users/")
+let userRepo = UserRepository<User>(withPath: "https://mikethetall.pythonanywhere.com/users/")
 
 print("About start fetch")
 //Fetch a single User
@@ -50,7 +83,7 @@ userRepo.fetch(withId: 1, withCompletion: {(user) in
 
 print("Done initiating fetch")
 
-/*
+
  * TODO: // Refactor the code using Generics and protocols so that you can re-use it as shown below
  *
  //Create a User Repository for the API at https://mikethetall.pythonanywhere.com/users/users/
@@ -76,4 +109,4 @@ print("Done initiating fetch")
  matchRepo.fetch(withId: 1185, withCompletion: {(match) in
     print(match!.status ?? "no match")
  })
-*/
+
