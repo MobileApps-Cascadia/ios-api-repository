@@ -5,11 +5,13 @@ class UserRepository<Element: Codable> {
     init(withPath path:String){
         self.path = path
     }
+    
     // READ a single object
     func fetch(withId id: Int, withCompletion completion: @escaping (Element?) -> Void) {
-        let URLstring = path + "\(id)"
+        let URLstring = path + "/\(id)"
+        
         if let url = URL.init(string: URLstring){
-            let task = URLSession.shared.dataTask(with: url, completionHandler:
+            let task1 = URLSession.shared.dataTask(with: url, completionHandler:
                                                     {(data, response, error) in
                 
                 let str = String(decoding: data!, as: UTF8.self)
@@ -20,7 +22,7 @@ class UserRepository<Element: Codable> {
                     completion (user)
                 }
             })
-            task.resume()
+            task1.resume()
         }
     }
     
@@ -37,7 +39,7 @@ class UserRepository<Element: Codable> {
         
         //TODO: Create the URLSession task to invoke the request
         let task = URLSession.shared.dataTask(with: postRequest) { (data, response, error) in
-//            print(String.init(data: data!, encoding: .utf8) ?? "no data")
+            //            print(String.init(data: data!, encoding: .utf8) ?? "no data")
             if
                 error == nil,
                 let httpResponse = response as? HTTPURLResponse
@@ -59,8 +61,6 @@ class UserRepository<Element: Codable> {
         
         task.resume()
     }
-    
-    
     
     
     func update( withId id:Int, a:User) {
@@ -90,6 +90,8 @@ class UserRepository<Element: Codable> {
     }
 }
 
+//Create a User Repository for the API at https://mikethetall.pythonanywhere.com/users
+let userRepo = UserRepository<User>(withPath: "https://mikethetall.pythonanywhere.com/users")
 
 class User: Codable {
     var UserID: Int?
@@ -101,25 +103,28 @@ class User: Codable {
 
 let newUser = User()
 newUser.FirstName = "Jason"
-newUser.LastName = "Horn22.0"
+newUser.LastName = "Fonk"
 newUser.PhoneNumber = "111-111-1111"
 newUser.SID = "08888"
 
-
-//Create a User Repository for the API at https://mikethetall.pythonanywhere.com/users
-let userRepo = UserRepository<User>(withPath: "https://mikethetall.pythonanywhere.com/users")
+let newUser3 = User()
+newUser3.FirstName = "Jon"
+newUser3.LastName = "Changed"
+newUser3.PhoneNumber = "111-111-1111"
+newUser3.SID = "08892"
 
 print("About start fetch")
 //Fetch a single User
-userRepo.fetch(withId: 1, withCompletion: {(user) in
+userRepo.fetch(withId: 3, withCompletion: {(user) in
     print(user!.FirstName ?? "no user")
 })
 
-//userRepo.create(a: newUser) { (msg) in
-//    print("added user \(msg)")
+//userRepo.create(a: newUser3) { (msg) in
+//    print("Added user \(msg)")
 //}
-//userRepo.update(withId: 7, a: newUser)
-//userRepo.delete(withId: 9)
+
+//userRepo.update(withId: 3, a: newUser3)
+userRepo.delete(withId: 3)
 
 print("Done initiating fetch")
 
