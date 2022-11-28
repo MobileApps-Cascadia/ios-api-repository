@@ -1,35 +1,97 @@
 import UIKit
 
-class UserRepository {
+class UserRepository<Element: Codable> {
     var path: String
     init(withPath path:String){
         self.path = path
     }
+    
     // READ a single object
-    func fetch(withId id: Int, withCompletion completion: @escaping (User?) -> Void) {
-        let URLstring = path + "\(id)"
+    func fetch(withId id: Int, withCompletion completion: @escaping (Element?) -> Void) {
+        let URLstring = path + "/\(id)"
+        
         if let url = URL.init(string: URLstring){
-            let task = URLSession.shared.dataTask(with: url, completionHandler:
-            {(data, response, error) in
+            let task1 = URLSession.shared.dataTask(with: url, completionHandler:
+                                                    {(data, response, error) in
                 
                 let str = String(decoding: data!, as: UTF8.self)
                 print("Responding to request data: " + str)
                 
-                if let user = try? JSONDecoder().decode(User.self, from: data!){
+                if let user = try? JSONDecoder().decode(Element.self, from: data!){
                     print("Running completion closure")
                     completion (user)
                 }
             })
-            task.resume()
+            task1.resume()
         }
     }
     
-    //TODO: Build and test comparable methods for the other CRUD items
-    //func create( a:User , withCompletion completion: @escaping (User?) -> Void) {}
-    //func update( withId id:Int, a:User) {}
-    //func delete( withId id:Int ) {}
+    // TODO: Build and test comparable methods for the other CRUD items
+    func create( a:User , withCompletion completion: @escaping (String) -> Void) {
+        let URLstring = path
+        var postRequest = URLRequest.init(url: URL.init(string: URLstring)!)
+        postRequest.httpMethod = "POST"
+        
+        //TODO: Encode the user object itself as JSON and assign to the body
+        postRequest.httpBody = try? JSONEncoder().encode(a)
+        postRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        print(String.init(data: postRequest.httpBody!, encoding: .utf8)!)
+        
+        //TODO: Create the URLSession task to invoke the request
+        let task = URLSession.shared.dataTask(with: postRequest) { (data, response, error) in
+            //            print(String.init(data: data!, encoding: .utf8) ?? "no data")
+            if
+                error == nil,
+                let httpResponse = response as? HTTPURLResponse
+            {
+                switch httpResponse.statusCode {
+                case 204:
+                    let result = String.init(data: data!, encoding: .utf8) ?? "no data"
+                    print("it worked")
+                    completion(result)
+                    break
+                    //...
+                default:
+                    break
+                }
+            } else {
+                //error case here...
+            }
+        }
+        
+        task.resume()
+    }
     
+    
+    func update( withId id:Int, a:User) {
+        let URLstring = path + "/\(String(id))"
+        var updateRequest = URLRequest.init(url: URL.init(string: URLstring)!)
+        updateRequest.httpMethod = "PUT"
+        updateRequest.httpBody = try? JSONEncoder().encode(a)
+        updateRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        let task = URLSession.shared.dataTask(with: updateRequest) { (data, response, error) in
+            print(String.init(data: data!, encoding: .ascii) ?? "no data")
+        }
+        task.resume()
+    }
+    
+    
+    func delete( withId id:Int ) {
+        let URLstring = path + "?id=\(String(id))"
+        var deleteRequest = URLRequest.init(url: URL.init(string: URLstring)!)
+        deleteRequest.httpMethod = "DELETE"
+        deleteRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        let task = URLSession.shared.dataTask(with: deleteRequest) { (data, response, error) in
+            print(String.init(data: data!, encoding: .ascii) ?? "no data")
+        }
+        task.resume()
+    }
 }
+
+//Create a User Repository for the API at https://mikethetall.pythonanywhere.com/users
+let userRepo = UserRepository<User>(withPath: "https://mikethetall.pythonanywhere.com/users")
 
 class User: Codable {
     var UserID: Int?
@@ -39,14 +101,30 @@ class User: Codable {
     var SID: String?
 }
 
-//Create a User Repository for the API at https://mikethetall.pythonanywhere.com/users
-let userRepo = UserRepository(withPath: "https://mikethetall.pythonanywhere.com/users/")
+let newUser = User()
+newUser.FirstName = "Jason"
+newUser.LastName = "Fonk"
+newUser.PhoneNumber = "111-111-1111"
+newUser.SID = "08888"
+
+let newUser3 = User()
+newUser3.FirstName = "Jon"
+newUser3.LastName = "Changed"
+newUser3.PhoneNumber = "111-111-1111"
+newUser3.SID = "08892"
 
 print("About start fetch")
 //Fetch a single User
-userRepo.fetch(withId: 1, withCompletion: {(user) in
-        print(user!.FirstName ?? "no user")
+userRepo.fetch(withId: 3, withCompletion: {(user) in
+    print(user!.FirstName ?? "no user")
 })
+
+//userRepo.create(a: newUser3) { (msg) in
+//    print("Added user \(msg)")
+//}
+
+//userRepo.update(withId: 3, a: newUser3)
+userRepo.delete(withId: 3)
 
 print("Done initiating fetch")
 
@@ -54,11 +132,11 @@ print("Done initiating fetch")
  * TODO: // Refactor the code using Generics and protocols so that you can re-use it as shown below
  *
  //Create a User Repository for the API at https://mikethetall.pythonanywhere.com/users/users/
- let userRepo = Repository<User>(withPath: "https://mikethetall.pythonanywhere.com/users/users/")
+ let userRepo = Repository<User>(withPath: "https://mikethetall.pythonanywhere.com/users/users")
  
  //Fetch a single User
  userRepo.fetch(withId: 2, withCompletion: {(user) in
-    print(user!.FirstName ?? "no user")
+ print(user!.FirstName ?? "no user")
  })
  
  // Another type of object
@@ -74,6 +152,6 @@ print("Done initiating fetch")
  
  //Fetch a single User
  matchRepo.fetch(withId: 1185, withCompletion: {(match) in
-    print(match!.status ?? "no match")
+ print(match!.status ?? "no match")
  })
-*/
+ */
